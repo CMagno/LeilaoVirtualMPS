@@ -1,9 +1,5 @@
-package Logic;
+package Logic.Pojos;
 
-/**
- *
- * @authors Carlos e Felipe
- */
 public class Produto {
     
     private String nome;

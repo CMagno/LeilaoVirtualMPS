@@ -1,19 +1,15 @@
 package GUI;
 
-import Infra.Exceptions.CpfDuplicateException;
+import Logic.Managers.Exceptions.CpfDuplicateException;
 import Infra.SinglePersistence;
-import Logic.Cliente;
-import Logic.Leilao;
-import Logic.Produto;
+import Logic.Pojos.Cliente;
+import Logic.Pojos.Leilao;
+import Logic.Pojos.Produto;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedList;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @authors Felipe e Carlos
- */
 public class Main_MENU {
 
     private SinglePersistence per;
@@ -22,13 +18,12 @@ public class Main_MENU {
         this.per = SinglePersistence.getInstance();
     }
 
-
     private void cadastraCliente() {
         String cli_nome = JOptionPane.showInputDialog("Nome:");
         while (true) {
             String cli_cpf = JOptionPane.showInputDialog("CPF:");
             try {
-                per.addCli(new Cliente(cli_nome, cli_cpf));
+                per.add(new Cliente(cli_nome, cli_cpf));
                 break;
             } catch (CpfDuplicateException e) {
                 JOptionPane.showMessageDialog(null, e.getMessage(), "Erro de CPF", JOptionPane.ERROR_MESSAGE);

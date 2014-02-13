@@ -1,11 +1,7 @@
-package Logic;
+package Logic.Pojos;
 
 import java.util.Objects;
 
-/**
- *
- * @authors Felipe e Carlos
- */
 public class Cliente {
 
     private String nome;
@@ -19,31 +15,18 @@ public class Cliente {
     public Cliente() {
         this("", "");
     }
-
-    /**
-     * @return the nome
-     */
     public String getNome() {
         return nome;
     }
 
-    /**
-     * @param nome the nome to set
-     */
     public void setNome(String nome) {
         this.nome = nome;
     }
 
-    /**
-     * @return the cpf
-     */
     public String getCpf() {
         return cpf;
     }
 
-    /**
-     * @param cpf the cpf to set
-     */
     public void setCpf(String cpf) {
         this.cpf = cpf;
     }

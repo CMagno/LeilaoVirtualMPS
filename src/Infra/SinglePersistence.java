@@ -1,202 +1,116 @@
 package Infra;
 
-import Infra.Exceptions.CpfDuplicateException;
-import Logic.Cliente;
-import Logic.Leilao;
-import Logic.Produto;
+import Logic.Managers.ClienteManager;
+import Logic.Managers.Exceptions.CpfDuplicateException;
+import Logic.Managers.LeilaoManager;
+import Logic.Managers.ProdutoManager;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @authors Felipe e Carlos
- */
-public class SinglePersistence {
-    
-    private static final SinglePersistence persistenceObj = new SinglePersistence();
-    private final static String cli_fileName = "clientes.dat";
-    private final static String lei_fileName = "leilao.dat";
-    private HashSet<Cliente> cli_list;
-    private LinkedList<Leilao> lei_list;
-    private DataInputStream in;
-    private DataOutputStream out;
+public class SinglePersistence implements Infra {
 
-    
+    private static final SinglePersistence persistenceObj = new SinglePersistence();
+    private final String cli_fileName = "clientes.dat";
+    private final String lei_fileName = "leilao.dat";
+
     private SinglePersistence() {
-        cli_list = cli_listInit();
-        lei_list = lei_listInit();
     }
-   
-    public static synchronized SinglePersistence getInstance(){
+
+    public static synchronized SinglePersistence getInstance() {
         return SinglePersistence.persistenceObj;
     }
 
-    //fills cli_list with data that was stored previously
-    private HashSet<Cliente> cli_listInit() {
-        HashSet<Cliente> list = new HashSet<>();
-        Cliente cli;
-        try {
+    @Override
+    public ClienteManager readCliList() {
+        ClienteManager clientes = new ClienteManager();
+        try (DataInputStream in = new DataInputStream(new FileInputStream(this.cli_fileName))) {
             int size = in.readInt();
             for (int i = 0; i < size; i++) {
-                cli = new Cliente();
-                cli.setNome(in.readUTF());
-                cli.setCpf(in.readUTF());
-                list.add(cli);
+                try {
+                    clientes.addCli(in.readUTF(), in.readUTF());
+                } catch (CpfDuplicateException ex) {
+                    System.out.println("Exceçao cpf duplicado");
+                }
             }
-        } catch (FileNotFoundException ex) {
-            return new HashSet<>();
         } catch (IOException ex) {
-            try {
-                in.close();
-            } catch (IOException ex1) {
-                Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex1);
-            }
-            return new HashSet<>();
         }
-        try {
-            in.close();
-        } catch (IOException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return list;
+        return clientes;
     }
 
-    private LinkedList<Leilao> lei_listInit() {
-        LinkedList<Leilao> list = new LinkedList<>();
-        Leilao lei;
-        try {
-            in = new DataInputStream(new FileInputStream(lei_fileName));
+    @Override
+    public LeilaoManager readLeiList() {
+        LeilaoManager lei = new LeilaoManager();
+        
+        try (DataInputStream in = new DataInputStream(new FileInputStream(this.lei_fileName))) {
             int size = in.readInt();
             for (int i = 0; i < size; i++) {
-
-                lei = new Leilao();
-
-                Produto prod = new Produto();
-                prod.setNome(in.readUTF());
-                prod.setDescricao(in.readUTF());
-                prod.setPreco_init(in.readDouble());
-                prod.setPreco_compra(in.readDouble());
-                prod.setAno(in.readInt());
-                lei.setProduto(prod);
-
-                Calendar c1 = Calendar.getInstance();
-                c1.setTimeInMillis(in.readLong());
-                lei.setData_int(c1);
-
-                Calendar c2 = Calendar.getInstance();
-                c2.setTimeInMillis(in.readLong());
-                lei.setData_int(c2);
-
-                list.add(lei);
+                //dados de produto
+                String nome = in.readUTF();
+                String descricao = in.readUTF();
+                double preco_init = in.readDouble();
+                double preco_compra = in.readDouble();
+                int ano = in.readInt();
+                //dados de leilao
+                Calendar data_int = Calendar.getInstance();
+                data_int.setTimeInMillis(in.readLong());
+                Calendar data_fim = Calendar.getInstance();
+                data_fim.setTimeInMillis(in.readLong());           
+                lei.addLeilao(ProdutoManager.geraProduto(nome, descricao, preco_init, preco_compra, ano),data_int,data_fim);
             }
         } catch (IOException ex) {
-            try {
-                in.close();
-            } catch (IOException ex1) {
-                Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex1);
-            }
-            return new LinkedList<>();
         }
-        try {
-            in.close();
-        } catch (IOException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return list;
+
+        return lei;
     }
 
-    public void saveCli() {
-        try {
-            out = new DataOutputStream(new FileOutputStream(cli_fileName, false));
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            out.writeInt(getCli_list().size()); // salva o tamanho da lista de clientes
+    @Override
+    public void saveCli(ClienteManager c) {
+        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.cli_fileName, false))) {
+            
+            out.writeInt(c.getCli_listSize()); // salva o tamanho da lista de clientes
+            
+            while (!c.isEmpty()) {
+                //consertar isso !!!
+                out.writeUTF((String) c.getCliData("nome"));
+                out.writeUTF((String) c.getCliData("cpf"));
+                c.nextCli();
+            }
         } catch (IOException ex) {
             Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (Cliente c : getCli_list()) {
+    }
+
+    @Override
+    public void saveLei(LeilaoManager l) {
+        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.lei_fileName, false))) {
+            
+            out.writeInt(l.getLei_listSize()); // salva o tamanho da lista de leiloes
+        
+        while(!l.isEmpty()) {
             try {
-                out.writeUTF(c.getNome());
-                out.writeUTF(c.getCpf());
+                //dados de produto
+                ProdutoManager p = new ProdutoManager();
+                p.setProduto(l.getLeiData("produto"));
+                out.writeUTF((String)p.getProdData("nome"));
+                out.writeUTF((String)p.getProdData("descricao"));
+                out.writeDouble((double)p.getProdData("preco_init"));
+                out.writeDouble((double)p.getProdData("preco_compra"));
+                out.writeInt((int)p.getProdData("ano"));
+                //dados de leilao
+                out.writeLong((long)l.getLeiData("data_ini"));
+                out.writeLong((long)l.getLeiData("data_compra"));
             } catch (IOException ex) {
                 Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        try {
-            out.close();
         } catch (IOException ex) {
             Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public void saveLei() {
-        for (Leilao l : getLei_list()) {
-            System.out.println(l.toString());
-        }
-        try {
-            out = new DataOutputStream(new FileOutputStream(lei_fileName, false));
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            out.writeInt(getLei_list().size()); // salva o tamanho da lista de leiloes
-        } catch (IOException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        for (Leilao l : getLei_list()) {
-            try {
-                //se um dia um leilao tiver mais de um produto ... salvar aqui tambem o tamanho da lista     =)
-                //salva produto do leilao
-                Produto prod = l.getProduto();
-                out.writeUTF(prod.getNome());
-                out.writeUTF(prod.getDescricao());
-                out.writeDouble(prod.getPreco_init());
-                out.writeDouble(prod.getPreco_compra());
-                out.writeInt(prod.getAno());
-
-                //salva leilao em si
-                out.writeLong(l.getData_int().getTimeInMillis());
-                out.writeLong(l.getData_fim().getTimeInMillis());
-            } catch (IOException ex) {
-                Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        try {
-            out.close();
-        } catch (IOException ex) {
-            Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void addCli(Cliente cli_novo) throws CpfDuplicateException {
-        for (Cliente c : getCli_list()) {
-            if (c.getCpf().equalsIgnoreCase(cli_novo.getCpf())) {
-                throw new CpfDuplicateException();
-            }
-        }
-        getCli_list().add(cli_novo);
-    }
-
-    public void addLeilao(Leilao lei_novo) {
-        getLei_list().add(lei_novo);
-    }
-
-    public HashSet<Cliente> getCli_list() {
-        return cli_list;
-    }
-
-    public LinkedList<Leilao> getLei_list() {
-        return lei_list;
     }
 }
