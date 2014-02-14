@@ -1,5 +1,9 @@
 /*
-    * Qualquer tratamento com cliente fica aqui ! (Lancamento de Exceptions)
+    * Qualquer tratamento com cliente fica aqui !
+    * 
+    * Qualquer mudança dos atributos de Cliente deve alterar os metodos 
+    * getCliData() e addCli()
+    * 
  */
 package Logic.Managers;
 
@@ -30,6 +34,17 @@ public class ClienteManager {
         
     }
     
+    
+    public void addCli(String nome, String cpf) throws CpfDuplicateException {
+        Cliente cli_novo = new Cliente(nome,cpf);
+        for (Cliente c : cli_list) {
+            if (c.getCpf().equalsIgnoreCase(cli_novo.getCpf())) {
+                throw new CpfDuplicateException();
+            }
+        }
+        cli_list.add(cli_novo);
+    }
+    
     public boolean isEmpty(){
         return cli_list.isEmpty();
     }
@@ -50,14 +65,5 @@ public class ClienteManager {
         return cli_list.size();
     }
 
-    public void addCli(String nome, String cpf) throws CpfDuplicateException {
-        Cliente cli_novo = new Cliente(nome,cpf);
-        for (Cliente c : cli_list) {
-            if (c.getCpf().equalsIgnoreCase(cli_novo.getCpf())) {
-                throw new CpfDuplicateException();
-            }
-        }
-        cli_list.add(cli_novo);
-    }
     
 }

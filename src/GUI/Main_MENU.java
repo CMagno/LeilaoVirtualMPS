@@ -1,7 +1,9 @@
 package GUI;
 
+import GUI.Readers.Reader;
 import Logic.Managers.Exceptions.CpfDuplicateException;
 import Infra.SinglePersistence;
+import Logic.Managers.ClienteManager;
 import Logic.Pojos.Cliente;
 import Logic.Pojos.Leilao;
 import Logic.Pojos.Produto;
@@ -13,9 +15,13 @@ import javax.swing.JOptionPane;
 public class Main_MENU {
 
     private SinglePersistence per;
-
+    private Reader leitor;
+    private ClienteManager clientes;
+    
     public Main_MENU() {
         this.per = SinglePersistence.getInstance();
+        leitor = new Reader();
+        clientes = new ClienteManager();
     }
 
     private void cadastraCliente() {
@@ -37,7 +43,7 @@ public class Main_MENU {
         
         Produto prod = new Produto();
         prod.setNome(JOptionPane.showInputDialog("Nome do Produto"));
-        prod.setDescricao(JOptionPaneFake.showInputTextDialog("Descricao do produto", "Tela de descricao"));
+        prod.setDescricao(Reader.showInputTextDialog("Descricao do produto", "Tela de descricao"));
         
         //set ano do produto
         while(true){
@@ -63,7 +69,7 @@ public class Main_MENU {
         
         //set data int
         while(true){
-            Calendar dataInt = JOptionPaneFake.showInputDateDialog("Data de Inicio", "Tela de data");
+            Calendar dataInt = Reader.showInputDateDialog("Data de Inicio", "Tela de data");
             if(dataInt == null){
                 JOptionPane.showMessageDialog(null, "Erro no formato da data", "Erro de data", JOptionPane.ERROR_MESSAGE);
             }
@@ -74,7 +80,7 @@ public class Main_MENU {
         }
         //set data fim
         while(true){
-            Calendar dataFim = JOptionPaneFake.showInputDateDialog("Data do Final", "Tela de data");
+            Calendar dataFim = Reader.showInputDateDialog("Data do Final", "Tela de data");
             if(dataFim == null){
                 JOptionPane.showMessageDialog(null, "Erro no formato da data", "Erro de data", JOptionPane.ERROR_MESSAGE);
             }

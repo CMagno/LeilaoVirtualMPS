@@ -95,13 +95,13 @@ public class SinglePersistence implements Infra {
         while(!l.isEmpty()) {
             try {
                 //dados de produto
-                ProdutoManager p = new ProdutoManager();
-                p.setProduto(l.getLeiData("produto"));
-                out.writeUTF((String)p.getProdData("nome"));
-                out.writeUTF((String)p.getProdData("descricao"));
-                out.writeDouble((double)p.getProdData("preco_init"));
-                out.writeDouble((double)p.getProdData("preco_compra"));
-                out.writeInt((int)p.getProdData("ano"));
+                ProdutoManager pManager = new ProdutoManager();
+                pManager.setProduto(l.getLeiData("produto"));
+                out.writeUTF((String)pManager.getProdData("nome"));
+                out.writeUTF((String)pManager.getProdData("descricao"));
+                out.writeDouble((double)pManager.getProdData("preco_init"));
+                out.writeDouble((double)pManager.getProdData("preco_compra"));
+                out.writeInt((int)pManager.getProdData("ano"));
                 //dados de leilao
                 out.writeLong((long)l.getLeiData("data_ini"));
                 out.writeLong((long)l.getLeiData("data_compra"));
