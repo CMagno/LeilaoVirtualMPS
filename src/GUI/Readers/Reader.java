@@ -7,8 +7,11 @@ public class Reader {
     public static final int jCalendar = 1;
     public static final int jText = 2;
     
+    private Reader(){
+        
+    }
     
-    public static String showInput(String mensagem,String titulo,int type) throws ParseException{
+    public static String showInput(String mensagem,String titulo,int type){
         ReaderStrategy acao;
         switch(type){
             case 1:

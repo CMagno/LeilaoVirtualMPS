@@ -1,7 +1,7 @@
 package Infra;
 
 import Logic.Managers.ClienteManager;
-import Logic.Managers.Exceptions.CpfDuplicateException;
+import Logic.Exceptions.CpfDuplicateException;
 import Logic.Managers.LeilaoManager;
 import Logic.Managers.ProdutoManager;
 import java.io.DataInputStream;
@@ -39,6 +39,7 @@ public class SinglePersistence implements Infra {
                 }
             }
         } catch (IOException ex) {
+            return clientes;
         }
         return clientes;
     }
@@ -56,14 +57,16 @@ public class SinglePersistence implements Infra {
                 double preco_init = in.readDouble();
                 double preco_compra = in.readDouble();
                 int ano = in.readInt();
+                ProdutoManager p = new ProdutoManager(nome,descricao,preco_init,preco_compra,ano);
                 //dados de leilao
                 Calendar data_int = Calendar.getInstance();
                 data_int.setTimeInMillis(in.readLong());
                 Calendar data_fim = Calendar.getInstance();
                 data_fim.setTimeInMillis(in.readLong());           
-                lei.addLeilao(ProdutoManager.geraProduto(nome, descricao, preco_init, preco_compra, ano),data_int,data_fim);
+                lei.addLeilao(p.getProduto(),data_int,data_fim);
             }
         } catch (IOException ex) {
+            return lei;
         }
 
         return lei;
@@ -76,9 +79,8 @@ public class SinglePersistence implements Infra {
             out.writeInt(c.getCli_listSize()); // salva o tamanho da lista de clientes
             
             while (!c.isEmpty()) {
-                //consertar isso !!!
-                out.writeUTF((String) c.getCliData("nome"));
-                out.writeUTF((String) c.getCliData("cpf"));
+                out.writeUTF(c.getCliente().getNome());
+                out.writeUTF( c.getCliente().getCpf());
                 c.nextCli();
             }
         } catch (IOException ex) {
@@ -95,16 +97,14 @@ public class SinglePersistence implements Infra {
         while(!l.isEmpty()) {
             try {
                 //dados de produto
-                ProdutoManager pManager = new ProdutoManager();
-                pManager.setProduto(l.getLeiData("produto"));
-                out.writeUTF((String)pManager.getProdData("nome"));
-                out.writeUTF((String)pManager.getProdData("descricao"));
-                out.writeDouble((double)pManager.getProdData("preco_init"));
-                out.writeDouble((double)pManager.getProdData("preco_compra"));
-                out.writeInt((int)pManager.getProdData("ano"));
+                out.writeUTF(l.getLeilao().getProduto().getNome());
+                out.writeUTF(l.getLeilao().getProduto().getDescricao());
+                out.writeDouble(l.getLeilao().getProduto().getPreco_init());
+                out.writeDouble(l.getLeilao().getProduto().getPreco_compra());
+                out.writeInt(l.getLeilao().getProduto().getAno());
                 //dados de leilao
-                out.writeLong((long)l.getLeiData("data_ini"));
-                out.writeLong((long)l.getLeiData("data_compra"));
+                out.writeLong(l.getLeilao().getData_int().getTimeInMillis());
+                out.writeLong(l.getLeilao().getData_fim().getTimeInMillis());
             } catch (IOException ex) {
                 Logger.getLogger(SinglePersistence.class.getName()).log(Level.SEVERE, null, ex);
             }

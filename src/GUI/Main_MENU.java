@@ -1,119 +1,85 @@
 package GUI;
 
+import GUI.FormValidation.Validation;
 import GUI.Readers.Reader;
-import Logic.Managers.Exceptions.CpfDuplicateException;
-import Infra.SinglePersistence;
-import Logic.Managers.ClienteManager;
-import Logic.Pojos.Cliente;
-import Logic.Pojos.Leilao;
-import Logic.Pojos.Produto;
+import Logic.Exceptions.CpfDuplicateException;
+import Logic.Exceptions.NullObject;
+import Logic.Managers.Facade;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class Main_MENU {
 
-    private SinglePersistence per;
-    private Reader leitor;
-    private ClienteManager clientes;
-    
+    private Facade clientesEleilao;
+
     public Main_MENU() {
-        this.per = SinglePersistence.getInstance();
-        leitor = new Reader();
-        clientes = new ClienteManager();
+        clientesEleilao = new Facade();
     }
 
-    private void cadastraCliente() {
-        String cli_nome = JOptionPane.showInputDialog("Nome:");
-        while (true) {
-            String cli_cpf = JOptionPane.showInputDialog("CPF:");
-            try {
-                per.add(new Cliente(cli_nome, cli_cpf));
-                break;
-            } catch (CpfDuplicateException e) {
-                JOptionPane.showMessageDialog(null, e.getMessage(), "Erro de CPF", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+    private void cadastraCliente() throws CpfDuplicateException {
+        String cli_nome;
+        do {
+            cli_nome = JOptionPane.showInputDialog("Nome:");
+        } while (!Validation.isValid(cli_nome, Validation.NAME));
+
+        String cli_cpf;
+        do {
+            cli_cpf = JOptionPane.showInputDialog("CPF:");
+        } while (!Validation.isValid(cli_cpf, Validation.CPF));
+
+        clientesEleilao.addCliente(cli_nome, cli_cpf);
     }
 
     private void cadastraLeilao() {
-        
-        Leilao lei = new Leilao();
-        
-        Produto prod = new Produto();
-        prod.setNome(JOptionPane.showInputDialog("Nome do Produto"));
-        prod.setDescricao(Reader.showInputTextDialog("Descricao do produto", "Tela de descricao"));
-        
-        //set ano do produto
-        while(true){
-            try{
-                prod.setAno(Integer.parseInt(JOptionPane.showInputDialog("Ano")));
-                break;
-            }catch(NumberFormatException e){
-                JOptionPane.showMessageDialog(null, "Ano invalido !", "Erro de Ano", JOptionPane.ERROR_MESSAGE);
-            }
+
+
+        String prod_nome = JOptionPane.showInputDialog("Nome do Produto");
+
+        String prod_desc;
+        do {
+            prod_desc = Reader.showInput("Descricao do produto", "Tela de descricao", Reader.jText);
+        } while (!Validation.isValid(prod_desc, Validation.DESCRICAO));
+
+        String prod_ano;
+        do {
+            prod_ano = JOptionPane.showInputDialog("Digite o ano");
+        } while (!Validation.isValid(prod_ano, Validation.INT));
+
+        String prod_preco;
+        do {
+            prod_preco = JOptionPane.showInputDialog("Digite o valor do produto");
+        } while (!Validation.isValid(prod_ano, Validation.DOUBLE));
+
+        clientesEleilao.setProduto(prod_nome, prod_desc, Double.parseDouble(prod_preco), 0, Integer.parseInt(prod_ano));
+
+        String lei_dataIni;
+        do {
+            lei_dataIni = Reader.showInput("Data de Inicio", "Tela de data", Reader.jCalendar);
+        } while (!Validation.isValid(lei_dataIni, Validation.DATE));
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date(lei_dataIni));
+        try {
+            clientesEleilao.addLeilao(c, null);
+        } catch (NullObject ex) {
+            Logger.getLogger(Main_MENU.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //set preco inicial do produto
-        while(true){
-            try{
-                prod.setPreco_init(Double.parseDouble(JOptionPane.showInputDialog("Preco")));
-                break;
-            }catch(NumberFormatException e){
-                JOptionPane.showMessageDialog(null, "Preco invalido !", "Erro de Preco", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-        
-        
-        lei.setProduto(prod);
-        
-        //set data int
-        while(true){
-            Calendar dataInt = Reader.showInputDateDialog("Data de Inicio", "Tela de data");
-            if(dataInt == null){
-                JOptionPane.showMessageDialog(null, "Erro no formato da data", "Erro de data", JOptionPane.ERROR_MESSAGE);
-            }
-            else{
-                lei.setData_int(dataInt);
-                break;
-            }
-        }
-        //set data fim
-        while(true){
-            Calendar dataFim = Reader.showInputDateDialog("Data do Final", "Tela de data");
-            if(dataFim == null){
-                JOptionPane.showMessageDialog(null, "Erro no formato da data", "Erro de data", JOptionPane.ERROR_MESSAGE);
-            }
-            else{
-                lei.setData_fim(dataFim);
-                break;
-            }
-        }
-        
-        per.addLeilao(lei);
-        
+
     }
 
     private void listaClientes() {
-        StringBuilder string = new StringBuilder("");
-        HashSet<Cliente> list = per.getCli_list();
-        for (Cliente c : list) {
-            string.append(c.toString()).append("\n");
-        }
-        JOptionPane.showMessageDialog(null, string.toString(), "Tela de Clientes", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, clientesEleilao.clienteToString(), "Tela de Clientes", JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     private void listaLeiloes() {
-        StringBuilder string = new StringBuilder("");
-        LinkedList<Leilao> list = per.getLei_list();
-        for (Leilao l : list) {
-            string.append(l.toString()).append("\n");
-        }
-        JOptionPane.showMessageDialog(null, string.toString(), "Tela de Leiloes", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, clientesEleilao.leilaoToString(), "Tela de Leiloes", JOptionPane.INFORMATION_MESSAGE);
     }
-    
 
     public void begin() {
+        clientesEleilao.initClientes();
+        clientesEleilao.initLeilao();
         while (true) {
             String option = JOptionPane.showInputDialog("Escolha uma opção : \n"
                     + "1 - Cadastrar Cliente\n"
@@ -128,7 +94,11 @@ public class Main_MENU {
 
             switch (option) {
                 case "1":
-                    cadastraCliente();
+                    try {
+                        cadastraCliente();
+                    } catch (CpfDuplicateException ex) {
+                        Logger.getLogger(Main_MENU.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     break;
                 case "2":
                     cadastraLeilao();
@@ -140,8 +110,8 @@ public class Main_MENU {
                     listaLeiloes();
                     break;
                 case "5":
-                    per.saveCli();
-                    per.saveLei();
+                    clientesEleilao.saveClientes();
+                    clientesEleilao.saveLei();
                     return;
                 default:
                     System.err.println("ERRO opcao nao existe !");

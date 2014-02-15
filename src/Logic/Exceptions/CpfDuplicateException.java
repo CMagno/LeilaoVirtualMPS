@@ -1,4 +1,4 @@
-package Logic.Managers.Exceptions;
+package Logic.Exceptions;
 
 public class CpfDuplicateException extends Exception{
     public CpfDuplicateException(){

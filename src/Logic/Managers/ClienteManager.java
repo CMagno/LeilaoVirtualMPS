@@ -7,7 +7,7 @@
  */
 package Logic.Managers;
 
-import Logic.Managers.Exceptions.CpfDuplicateException;
+import Logic.Exceptions.CpfDuplicateException;
 import Logic.Pojos.Cliente;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,17 +21,8 @@ public class ClienteManager {
         cli_list = new HashSet<>();
     }
     
-    public Object getCliData(String data){
-        Cliente next = cli_list.iterator().next();
-        switch(data){
-            case "nome":
-                return next.getNome();
-            case "cpf":
-                return next.getCpf();
-            default :
-                return null;
-        }
-        
+    public Cliente getCliente(){
+        return cli_list.iterator().next(); 
     }
     
     
@@ -63,6 +54,17 @@ public class ClienteManager {
 
     public int getCli_listSize() {
         return cli_list.size();
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder string = new StringBuilder("");
+        for(Cliente c : cli_list){
+            string.append(c.toString());
+            string.append("\n");
+        }
+        return string.toString();
+        
     }
 
     

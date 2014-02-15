@@ -20,18 +20,8 @@ public class LeilaoManager {
         return lei_list.isEmpty();
     }
     
-    public Object getLeiData(String data){
-        Leilao l = lei_list.getFirst();
-        switch(data){
-            case "data_fim": 
-                return l.getData_fim().getTimeInMillis();
-            case "data_ini":
-                return l.getData_int().getTime();
-            case "produto":
-                return l.getProduto();
-            
-        }
-        return null;
+    public Leilao getLeilao(){
+        return lei_list.getFirst();   
     }
     
     public int getLei_listSize() {
@@ -44,6 +34,16 @@ public class LeilaoManager {
     
     public void addLeilao(Produto produto, Calendar data_int, Calendar data_fim) {
         lei_list.add(new Leilao(produto,data_int,data_fim));
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder string = new StringBuilder("");
+        for(Leilao l :  lei_list){
+            string.append(l.toString());
+            string.append("\n");
+        }
+        return string.toString();
     }
     
 }
