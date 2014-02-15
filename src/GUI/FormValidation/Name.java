@@ -9,7 +9,7 @@ public class Name implements ValidationStrategy{
         // nome min 5
         boolean condition2 = (data.length() <   5)    ? false : true; 
         // nome nao contem numero
-        boolean condition3 = (data.matches("[0-9]+")) ? false : true; 
+        boolean condition3 = (data.matches(".*\\d+.*")) ? false : true; 
         
         
         
