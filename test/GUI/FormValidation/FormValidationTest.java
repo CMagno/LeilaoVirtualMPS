@@ -46,6 +46,7 @@ public class FormValidationTest {
         assertFalse(Validation.isValid ("1993/15/02",Validation.DATE));
         assertFalse(Validation.isValid ("31/02/1993",Validation.DATE));
         assertFalse(Validation.isValid ("31/06/1993",Validation.DATE));
+        assertFalse(Validation.isValid ("06/17/1993",Validation.DATE));
     }
     
     @Test

@@ -1,7 +1,5 @@
 package GUI.Readers;
 
-import java.text.ParseException;
-
 public class Reader {
     
     public static final int jCalendar = 1;

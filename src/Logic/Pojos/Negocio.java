@@ -1,9 +1,5 @@
 package Logic.Pojos;
 
-/**
- *
- * @authors Carlos e Felipe
- */
 public class Negocio {
     
     private Cliente comprador;

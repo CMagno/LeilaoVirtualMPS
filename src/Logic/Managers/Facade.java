@@ -25,8 +25,10 @@ public class Facade {
         clientes = persistence.readCliList();
     }
     
-    public void addCliente(String nome, String cpf) throws CpfDuplicateException{        
-            clientes.addCli(nome, cpf);
+    public boolean addCliente(String nome, String cpf) throws CpfDuplicateException{        
+        if(clientes == null) 
+            initClientes();    
+        return clientes.addCli(nome, cpf);
     }
     
     public String clienteToString(){
@@ -48,9 +50,12 @@ public class Facade {
     
     
     public void addLeilao(Calendar data_int, Calendar data_fim) throws NullObject{
+        if(leiloes == null)
+            initLeilao();
         if(this.produto == null)
             throw new NullObject("Produto é um objeto nulo");
         leiloes.addLeilao(this.produto.getProduto(), data_int, data_fim);
+        this.produto = null;
     }
     
     public String leilaoToString(){

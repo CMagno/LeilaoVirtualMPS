@@ -26,14 +26,14 @@ public class ClienteManager {
     }
     
     
-    public void addCli(String nome, String cpf) throws CpfDuplicateException {
+    public boolean addCli(String nome, String cpf) throws CpfDuplicateException {
         Cliente cli_novo = new Cliente(nome,cpf);
         for (Cliente c : cli_list) {
             if (c.getCpf().equalsIgnoreCase(cli_novo.getCpf())) {
                 throw new CpfDuplicateException();
             }
         }
-        cli_list.add(cli_novo);
+        return cli_list.add(cli_novo);
     }
     
     public boolean isEmpty(){

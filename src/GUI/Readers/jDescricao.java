@@ -1,7 +1,6 @@
 package GUI.Readers;
 
 import java.awt.Insets;
-import java.text.ParseException;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;

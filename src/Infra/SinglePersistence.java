@@ -22,7 +22,7 @@ public class SinglePersistence implements Infra {
     private SinglePersistence() {
     }
 
-    public static synchronized SinglePersistence getInstance() {
+    public static SinglePersistence getInstance() {
         return SinglePersistence.persistenceObj;
     }
 
